@@ -156,17 +156,17 @@ export default function AdminDashboard() {
 
       console.log('Sending to Make webhook with phone:', cleanPhone)
 
-      const res = await fetch('https://hook.us2.make.com/n3gsr2u7vexnoaj4a7pq5d480ko1ok6v', {
+      await fetch('https://hook.us2.make.com/n3gsr2u7vexnoaj4a7pq5d480ko1ok6v', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain' },
         body: JSON.stringify({
           phone: cleanPhone,
-          name: contact.name || 'User',
-          message: 'Hello! Please reply to this message with your option.',
+          name: (contact.name as string) || 'User',
+          message: 'Hello! Please reply to this message with your update.',
         }),
       })
 
-      if (!res.ok) throw new Error(`Server returned ${res.status}`)
       alert(`Prompt sent to ${cleanPhone}!`)
       const now = new Date().toISOString()
       setTrainees((prev) =>
