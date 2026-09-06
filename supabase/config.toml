@@ -1,0 +1,2 @@
+[functions.whatsapp-survey-webhook]
+verify_jwt = false

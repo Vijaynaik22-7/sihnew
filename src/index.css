@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-ink-50 text-ink-900 font-sans antialiased;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-white rounded-2xl shadow-sm border border-ink-100 transition-all duration-300;
+  }
+  .card:hover {
+    @apply shadow-md;
+  }
+  .btn-primary {
+    @apply bg-saffron-500 hover:bg-saffron-600 text-white font-medium px-5 py-2.5 rounded-xl transition-colors duration-200;
+  }
+  .btn-secondary {
+    @apply bg-white hover:bg-ink-50 text-ink-700 font-medium px-5 py-2.5 rounded-xl border border-ink-200 transition-colors duration-200;
+  }
+  .stat-card {
+    @apply card p-6 flex flex-col gap-2;
+  }
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  .badge-success {
+    @apply badge bg-forest-100 text-forest-700;
+  }
+  .badge-warning {
+    @apply badge bg-saffron-100 text-saffron-700;
+  }
+  .badge-danger {
+    @apply badge bg-red-100 text-red-700;
+  }
+  .badge-neutral {
+    @apply badge bg-ink-100 text-ink-600;
+  }
+  .form-input {
+    @apply w-full px-4 py-2.5 pr-4 rounded-xl border border-ink-200 text-sm text-ink-800 focus:outline-none focus:ring-2 focus:ring-saffron-400 bg-white transition-colors;
+  }
+}
+
+/* Toggle switch */
+.toggle-switch {
+  @apply relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-300 cursor-pointer;
+}
+.toggle-switch.on {
+  @apply bg-forest-500;
+}
+.toggle-switch.off {
+  @apply bg-ink-300;
+}
+.toggle-knob {
+  @apply inline-block h-5 w-5 transform rounded-full bg-white transition-transform duration-300;
+}
+.toggle-switch.on .toggle-knob {
+  @apply translate-x-6;
+}
+.toggle-switch.off .toggle-knob {
+  @apply translate-x-1;
+}
+
+/* Timeline */
+.timeline-line {
+  @apply absolute left-[19px] top-0 bottom-0 w-0.5 bg-ink-200;
+}
+.timeline-dot {
+  @apply relative z-10 flex items-center justify-center w-10 h-10 rounded-full ring-4 ring-white;
+}
