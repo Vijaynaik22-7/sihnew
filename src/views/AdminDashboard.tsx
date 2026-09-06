@@ -130,17 +130,15 @@ export default function AdminDashboard() {
   }
 
   const triggerFollowUp = async (trainee: Trainee) => {
+    const contact = { phone: trainee.phone_number ?? '', name: trainee.full_name }
+    console.log('CLICKED BUTTON FOR CONTACT:', contact)
     setSendingId(trainee.id)
     try {
-      const phone = (trainee.phone_number ?? '').replace(/[^0-9]/g, '')
-      const response = await fetch('https://hook.us2.make.com/qsupvjmkoikn42n9kqmgfv53ojkssc79', {
+      const response = await fetch('https://hook.us2.make.com/n3gsr2u7vexnoaj4a7pq5d480ko1ok6v', {
         method: 'POST',
         mode: 'cors',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          phone,
-          message: `Hello ${trainee.full_name}! Please reply with your daily update:`,
-        }),
+        body: JSON.stringify({ phone: contact.phone, name: contact.name }),
       })
       if (response.ok) {
         const now = new Date().toISOString()
@@ -631,8 +629,8 @@ export default function AdminDashboard() {
                       </td>
                       <td className="py-3">
                         <button
+                          type="button"
                           onClick={() => triggerFollowUp(t)}
-                          disabled={sendingId === t.id}
                           className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-saffron-50 text-saffron-700 hover:bg-saffron-100 transition-colors duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
                         >
                           {sendingId === t.id ? (
