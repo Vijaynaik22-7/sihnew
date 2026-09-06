@@ -130,33 +130,57 @@ export default function AdminDashboard() {
   }
 
   const triggerFollowUp = async (trainee: Trainee) => {
-    const contact = { phone: trainee.phone_number ?? '', name: trainee.full_name }
+    const contact: Record<string, unknown> = {
+      phone: trainee.phone_number ?? '',
+      phoneNumber: trainee.phone_number ?? '',
+      mobile: trainee.phone_number ?? '',
+      contact_number: trainee.phone_number ?? '',
+      name: trainee.full_name,
+    }
     console.log('CLICKED BUTTON FOR CONTACT:', contact)
     setSendingId(trainee.id)
     try {
-      const response = await fetch('https://hook.us2.make.com/n3gsr2u7vexnoaj4a7pq5d480ko1ok6v', {
-        method: 'POST',
-        mode: 'cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: contact.phone, name: contact.name }),
-      })
-      if (response.ok) {
-        const now = new Date().toISOString()
-        setTrainees((prev) =>
-          prev.map((t) =>
-            t.id === trainee.id
-              ? { ...t, follow_up_status: 'Sent', outcome_updated_at: now }
-              : t,
-          ),
-        )
-        setFollowUpToast({ name: trainee.full_name })
-        setTimeout(() => setFollowUpToast(null), 4000)
-      } else {
-        alert('Webhook response error: ' + response.status)
+      const rawNumber =
+        (contact.phone as string) ||
+        (contact.phoneNumber as string) ||
+        (contact.mobile as string) ||
+        (contact.contact_number as string) ||
+        ''
+      const cleanPhone = String(rawNumber).replace(/\D/g, '')
+
+      if (!cleanPhone || cleanPhone.length < 10) {
+        alert(`Error: Invalid or missing phone number for ${contact.name || 'this contact'}. Found: "${rawNumber}"`)
+        console.error('Contact object missing valid phone:', contact)
+        return
       }
+
+      console.log('Sending to Make webhook with phone:', cleanPhone)
+
+      const res = await fetch('https://hook.us2.make.com/n3gsr2u7vexnoaj4a7pq5d480ko1ok6v', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: cleanPhone,
+          name: contact.name || 'User',
+          message: 'Hello! Please reply to this message with your option.',
+        }),
+      })
+
+      if (!res.ok) throw new Error(`Server returned ${res.status}`)
+      alert(`Prompt sent to ${cleanPhone}!`)
+      const now = new Date().toISOString()
+      setTrainees((prev) =>
+        prev.map((t) =>
+          t.id === trainee.id
+            ? { ...t, follow_up_status: 'Sent', outcome_updated_at: now }
+            : t,
+        ),
+      )
+      setFollowUpToast({ name: trainee.full_name })
+      setTimeout(() => setFollowUpToast(null), 4000)
     } catch (err) {
-      console.error('Trigger error:', err)
-      alert('Failed to send trigger: ' + (err instanceof Error ? err.message : String(err)))
+      console.error('Webhook error:', err)
+      alert('Failed to send webhook')
     } finally {
       setSendingId(null)
     }
