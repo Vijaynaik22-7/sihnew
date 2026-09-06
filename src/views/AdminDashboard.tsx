@@ -62,6 +62,8 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true)
   const [trainees, setTrainees] = useState<Trainee[]>([])
   const [outcomeToasts, setOutcomeToasts] = useState<OutcomeToast[]>([])
+  const [followUpToast, setFollowUpToast] = useState<{ name: string } | null>(null)
+  const [sendingId, setSendingId] = useState<string | null>(null)
   const toastIdRef = useRef(0)
 
   const [districtFilter, setDistrictFilter] = useState('all')
@@ -128,14 +130,16 @@ export default function AdminDashboard() {
   }
 
   const triggerFollowUp = async (trainee: Trainee) => {
+    setSendingId(trainee.id)
     try {
-      const response = await fetch('https://hook.us2.make.com/n3gsr2u7vexnoaj4a7pq5d480ko1ok6v', {
+      const phone = (trainee.phone_number ?? '').replace(/[^0-9]/g, '')
+      const response = await fetch('https://hook.us2.make.com/qsupvjmkoikn42n9kqmgfv53ojkssc79', {
         method: 'POST',
         mode: 'cors',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          phone: trainee.phone_number ?? '+918088605066',
-          name: trainee.full_name,
+          phone,
+          message: `Hello ${trainee.full_name}! Please reply with your daily update:`,
         }),
       })
       if (response.ok) {
@@ -147,12 +151,16 @@ export default function AdminDashboard() {
               : t,
           ),
         )
+        setFollowUpToast({ name: trainee.full_name })
+        setTimeout(() => setFollowUpToast(null), 4000)
       } else {
         alert('Webhook response error: ' + response.status)
       }
     } catch (err) {
       console.error('Trigger error:', err)
       alert('Failed to send trigger: ' + (err instanceof Error ? err.message : String(err)))
+    } finally {
+      setSendingId(null)
     }
   }
 
@@ -334,6 +342,21 @@ export default function AdminDashboard() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Follow-Up Success Toast */}
+      {followUpToast && (
+        <div className="fixed top-20 right-6 z-50 flex items-center gap-3 bg-forest-600 text-white rounded-xl shadow-lg px-5 py-3.5 animate-fade-in">
+          <CheckCircle2 className="w-5 h-5 shrink-0" />
+          <span className="text-sm font-medium">Follow-up sent to {followUpToast.name}</span>
+          <button
+            onClick={() => setFollowUpToast(null)}
+            className="text-white/70 hover:text-white transition-colors shrink-0 ml-1"
+            aria-label="Dismiss"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       {/* WhatsApp Outcome Toasts */}
       {outcomeToasts.length > 0 && (
         <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 w-full max-w-2xl px-4">
@@ -609,10 +632,20 @@ export default function AdminDashboard() {
                       <td className="py-3">
                         <button
                           onClick={() => triggerFollowUp(t)}
-                          className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-saffron-50 text-saffron-700 hover:bg-saffron-100 transition-colors duration-200"
+                          disabled={sendingId === t.id}
+                          className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-saffron-50 text-saffron-700 hover:bg-saffron-100 transition-colors duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
                         >
-                          <Zap className="w-3.5 h-3.5" />
-                          Trigger Follow-Up
+                          {sendingId === t.id ? (
+                            <>
+                              <div className="w-3.5 h-3.5 border-2 border-saffron-300 border-t-saffron-700 rounded-full animate-spin" />
+                              Sending...
+                            </>
+                          ) : (
+                            <>
+                              <Zap className="w-3.5 h-3.5" />
+                              Trigger Follow-Up
+                            </>
+                          )}
                         </button>
                       </td>
                     </tr>
